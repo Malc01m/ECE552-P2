@@ -1,0 +1,3 @@
+I lost a point on HW4 because of missing bypass logic. 
+If your homework was correct, feel free to replace these modules.
+-MW
