@@ -1,0 +1,5 @@
+LLB R10, 2
+SW      R10, R10, 6 
+LW      R1, R10, 6 # address should be 1000, contents should be 2
+LW      R2, R10, 2
+HLT

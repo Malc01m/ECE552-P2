@@ -1,0 +1,31 @@
+# test Compute Instructions:
+	LLB R1, 1 # should be 0000000000000001
+    LLB R2, 2 # should be 0000000000000010
+    ADD	R4, R1, R2 # should be 3
+    SUB R3, R4, R1 # should be 2
+    SUB R11, R3, R4 # should get -1; should set Nflag = 1 
+    XOR R5, R3, R3 # should be 0; flags should be 001 - should set Zflag = 1
+    PADDSB R5, R4, R3 # should be 5; flags should be 101
+    SLL R5, R5, 2 # should be 20; flags should be 101 - should set Zflag = 0
+    ROR R5, R5,  3 # should be 1000000000000010 aka -32766; flags should be 001
+    SRA R5, R5, 5 # should be  1111110000000010
+    RED R5, R5, R1 # should be 0000000011111101
+    LHB R6, 1 # should be 0000000100000000 
+    PCS R7
+    XOR R5, R7, R7
+    LHB R10, 128 # load in max negative number
+    LHB R12, 128 # load in max negative number
+    ADD R13, R10, R12 # should be max neg -> also should set flags to 011
+    XOR R13, R13, R13 # should set flags to 111
+    B 111, L1 # should jump past all the adds
+    ADD R1, R1, R1
+    ADD R1, R1, R1
+    ADD R1, R1, R1
+    ADD R1, R1, R1
+L1: LLB R14, 58 
+    BR 111, R14 # should jump past all the adds
+    ADD R1, R1, R1
+    ADD R1, R1, R1
+    ADD R1, R1, R1
+    ADD R1, R1, R1
+    HLT
