@@ -1,8 +1,6 @@
-`include "registerFile.v"
+`include "RegisterFile.v"
 
 module TB_RegisterFile(SrcData1, SrcData2);
-
-
    
    // Parameters
    integer i, correct, total;
@@ -11,15 +9,12 @@ module TB_RegisterFile(SrcData1, SrcData2);
    reg rst, WriteReg;
    reg [3:0] SrcReg1, SrcReg2, DstReg;
    reg [15:0] DstData;
-
    inout wire[15:0] SrcData1, SrcData2;
-   
    reg clk;
    reg [15:0] counter;
    initial clk = 0;
    always #10 clk = ~clk;
 
-   
    // Instantiate the PSA_16bit module
    RegisterFile uut (
       .clk(clk),
@@ -33,12 +28,9 @@ module TB_RegisterFile(SrcData1, SrcData2);
       .SrcData2(SrcData2)
    );
 
-   
-
    // Test procedure
    always begin
       $display("Running RegisterFile testbench...");
-
 
       //$monitor("WriteEnable: %b | D %b \n Bitline1: %b| ReadEnable1: %b \n Bitline2: %b | ReadEnable2: %b \n____\n", WriteEnable, D, Bitline1, ReadEnable1, Bitline2, ReadEnable2);
       correct = 0;
@@ -64,7 +56,6 @@ module TB_RegisterFile(SrcData1, SrcData2);
          end
          total = total + 1;
       end
-
 
       // test SrcData2
       for (i = 0; i < 16; i = i + 1) begin
@@ -102,7 +93,6 @@ module TB_RegisterFile(SrcData1, SrcData2);
          total = total + 1;
       end
 
-
       // reset
       for (i = 0; i < 16; i = i + 1) begin
          DstReg = i;
@@ -126,7 +116,6 @@ module TB_RegisterFile(SrcData1, SrcData2);
          end
          total = total + 1;
       end
-
 
       // test can't write when disabled
       WriteReg = 0;
