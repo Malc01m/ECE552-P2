@@ -73,7 +73,7 @@ module TB_RegisterFile(SrcData1, SrcData2);
          DstData = i + 16;
          #20;
          SrcReg2 = i;
-         #20;;
+         #20;
          if (SrcData2 == i + 16) begin
          correct = correct + 1;
          //$display("Test %d Passed; expected: %d sum: %d", i, (ALU_In1 + ALU_In2), ALU_Out);
