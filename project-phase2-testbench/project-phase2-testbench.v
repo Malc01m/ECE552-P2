@@ -1,6 +1,5 @@
 module cpu_ptb();
   
-
    wire [15:0] PC;
    wire [15:0] Inst;           /* This should be the 15 bits of the FF that
                                   stores instructions fetched from instruction memory
@@ -25,16 +24,8 @@ module cpu_ptb();
    reg clk; /* Clock input */
    reg rst_n; /* (Active low) Reset input */
 
-     
-
    cpu DUT(.clk(clk), .rst_n(rst_n), .pc(PC), .hlt(Halt)); /* Instantiate your processor */
    
-
-
-
-
-
-
    /* Setup */
    initial begin
       $display("Hello world...simulation starting");
@@ -44,10 +35,6 @@ module cpu_ptb();
       sim_log_file = $fopen("verilogsim.plog");
       
    end
-
-
-
-
 
   /* Clock and Reset */
 // Clock period is 100 time units, and reset length
@@ -72,13 +59,6 @@ module cpu_ptb();
 		$finish;
 	end
     end
-
-
-
-
-
-
-
 
   /* Stats */
    always @ (posedge clk) begin
@@ -137,37 +117,33 @@ module cpu_ptb();
 //   assign Halt = DUT.memory0.halt; //You won't need this because it's part of the main cpu interface
    // Is processor halted (1 bit signal)
    
-
-   assign Inst = DUT.p0.instr;
+   assign Inst = DUT.WB.currInstruction;
    //Instruction fetched in the current cycle
    
-   assign RegWrite = DUT.p0.regWrite;
+   assign RegWrite = DUT.WB.writeReg;
    // Is register file being written to in this cycle, one bit signal (1 means yes, 0 means no)
   
-   assign WriteRegister = DUT.p0.DstwithJmout;
+   assign WriteRegister = DUT.WB.dstReg;
    // If above is true, this should hold the name of the register being written to. (4 bit signal)
    
-   assign WriteData = DUT.p0.wData;
+   assign WriteData = DUT.WB.regDataToWrite;
    // If above is true, this should hold the Data being written to the register. (16 bits)
    
-   assign MemRead =  (DUT.p0.memRxout & ~DUT.p0.notdonem);
+   assign MemRead =  (DUT.WB.memRead & ~DUT.WB.notdonem);
    // Is memory being read from, in this cycle. one bit signal (1 means yes, 0 means no)
    
-   assign MemWrite = (DUT.p0.memWxout & ~DUT.p0.notdonem);
+   assign MemWrite = (DUT.WB.memWrite & ~DUT.WB.notdonem);
    // Is memory being written to, in this cycle (1 bit signal)
    
-   assign MemAddress = DUT.p0.data1out;
+   assign MemAddress = DUT.WB.memAddress;
    // If there's a memory access this cycle, this should hold the address to access memory with (for both reads and writes to memory, 16 bits)
    
-   assign MemDataIn = DUT.p0.data2out;
+   assign MemDataIn = DUT.WB.MemDataIn;
    // If there's a memory write in this cycle, this is the Data being written to memory (16 bits)
    
-   assign MemDataOut = DUT.p0.readData;
+   assign MemDataOut = DUT.WB.MemData;
    // If there's a memory read in this cycle, this is the data being read out of memory (16 bits)
-
-
 
    /* Add anything else you want here */
 
-   
 endmodule
