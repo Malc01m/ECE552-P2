@@ -8,9 +8,8 @@ module PC_Control(instruction, curr_pc, new_pc, clk, rst_n, branchRegData, HLT, 
   output [15:0] new_pc, outPlus2PC;
 
   wire [15:0] plus2PC, B_PC, BR_PC, selectedPC, readPC;
-  wire pcError, takeBranch, Zflag, Vflag, Nflag;
+  wire pcError, takeBranch;
   
-
   // add two to curr pc
   addsub_16bit pcAdder(.A(curr_pc), .B(16'd2), .sub(1'b0), .Sum(plus2PC), .Ovfl(pcError));
 
@@ -27,6 +26,7 @@ module PC_Control(instruction, curr_pc, new_pc, clk, rst_n, branchRegData, HLT, 
 
   assign new_pc = (HLT == 1) ? curr_pc: readPC;
   assign outPlus2PC = plus2PC;
+  
 endmodule
 
 // Malcolm's HW5 version

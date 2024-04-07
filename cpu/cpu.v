@@ -10,19 +10,22 @@ module cpu(clk, rst_n, hlt, pc_out);
    output hlt;
    output [15:0] pc_out;
 
-   // IF
-   wire [0:15] currInstruction_IF;
+   // internal
+   wire [15:0] currInstruction_IF, currInstruction_ID, PCS_PC_IF, PCS_PC_ID, PCS_PC_EX;
 
-   IF_unit IF(.clk(clk), .rst_n(rst_n), .currInstruction(currInstruction_IF));
+   // IF
+   IF_unit IF(.clk(clk), .rst_n(rst_n), .currInstruction(currInstruction_IF), .PCS_PC(PCS_PC_IF));
 
    // IF/ID buffer
-   IF_ID_buf IFIDbuf();
+   IF_ID_buf IFIDbuf(.currInstruction_IF(currInstruction_IF), .currInstruction_ID(currInstruction_ID), 
+      .PCS_PC_IF(PCS_PC_IF), .PCS_PC_ID(PCS_PC_ID));
 
    // ID
-   ID_unit ID();
+   ID_unit ID(.clk(clk), .rst_n(rst_n), .HLT(hlt), .currInstruction(currInstruction_ID), 
+      .writeReg_WB(writeReg_WB), .writeReg_ID(writeReg_ID), .regDataToWrite(regDataToWrite));
 
    // ID/EX buffer
-   ID_EX_buf IDEXbuf();
+   ID_EX_buf IDEXbuf(.PCS_PC_ID(PCS_PC_ID), .PCS_PC_EX(PCS_PC_EX));
 
    // EX
    EX_unit EX();
@@ -37,6 +40,7 @@ module cpu(clk, rst_n, hlt, pc_out);
    MEM_WB_buf MEMWBbuf();
 
    // WB
+   // Note: ID stage will need writeReg_WB and regDataToWrite signals from the WB stage
    WB_unit WB();
 
    // Hazard detection unit

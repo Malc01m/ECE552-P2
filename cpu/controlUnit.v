@@ -1,9 +1,11 @@
-module controlUnit(opCode, rst_n, writeReg, readReg1, readReg2, memRead, memWrite, ComputeType, MemType, BinaryType, BranchType, HLT);
+module controlUnit(opCode, rst_n, writeReg, readReg1, readReg2, memRead, memWrite, ComputeType, 
+   MemType, BinaryType, BranchType, HLT);
 
    // ports
    input wire [3:0] opCode;
    input rst_n;
-   output reg writeReg, readReg1, readReg2, memRead, memWrite, ComputeType, MemType, BinaryType, BranchType, HLT;
+   output reg writeReg, readReg1, readReg2, memRead, memWrite, ComputeType, MemType, BinaryType, 
+      BranchType, HLT;
 
    // internal
    reg error;
