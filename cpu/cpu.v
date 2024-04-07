@@ -11,7 +11,9 @@ module cpu(clk, rst_n, hlt, pc_out);
    output [15:0] pc_out;
 
    // IF
-   IF_unit IF();
+   wire [0:15] currInstruction_IF;
+
+   IF_unit IF(.clk(clk), .rst_n(rst_n), .currInstruction(currInstruction_IF));
 
    // IF/ID buffer
    IF_ID_buf IFIDbuf();
@@ -20,7 +22,7 @@ module cpu(clk, rst_n, hlt, pc_out);
    ID_unit ID();
 
    // ID/EX buffer
-   ID_EX_buf IFIDbuf();
+   ID_EX_buf IDEXbuf();
 
    // EX
    EX_unit EX();
