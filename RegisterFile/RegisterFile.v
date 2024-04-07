@@ -15,6 +15,7 @@ module RegisterFile(clk, rst, SrcReg1, SrcReg2, DstReg, WriteReg, DstData, SrcDa
   ReadDecoder_4_16 rd2(.RegId(SrcReg2),.Wordline(expandedReadReg2));
 
   Register rs[15:0](.clk(clk), .rst(rst), .D(DstData), .WriteReg(expandedWriteReg), 
-    .ReadEnable1(expandedReadReg1), .ReadEnable2(expandedReadReg2), .Bitline1(SrcData1), .Bitline2(SrcData2));
+    .ReadEnable1(expandedReadReg1), .ReadEnable2(expandedReadReg2), .Bitline1(SrcData1), 
+    .Bitline2(SrcData2));
 
 endmodule

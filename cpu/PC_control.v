@@ -1,33 +1,57 @@
-module PC_Control(instruction, curr_pc, new_pc, clk, rst_n, branchRegData, HLT, outPlus2PC, flags);
+// P2 PC_Control with IF parts (calc of PC + 2) removed
+
+module PC_Control(instruction, curr_pc, new_pc, clk, rst_n, branchRegData, HLT, flags, plus2PC);
 
   //  always #50 $monitor("Curr PC: %d, Plus2PC: %d, B_PC: %d", intermediatePC, plus2PC, B_PC);
-  input [15:0] instruction, curr_pc, branchRegData;
+  input [15:0] instruction, curr_pc, plus2PC, branchRegData;
   input clk, rst_n, HLT;
   input [2:0] flags;
 
-  output [15:0] new_pc, outPlus2PC;
+  output [15:0] new_pc;
 
-  wire [15:0] plus2PC, B_PC, BR_PC, selectedPC, readPC;
+  wire [15:0] B_PC, BR_PC, selectedPC, readPC;
   wire pcError, takeBranch;
-  
-  // add two to curr pc
-  addsub_16bit pcAdder(.A(curr_pc), .B(16'd2), .sub(1'b0), .Sum(plus2PC), .Ovfl(pcError));
 
   // calc branch
   branchUnit br(.instruction(instruction), .curr_pc(curr_pc), .B_PC(B_PC));
   
   // see if branch taken or not
   decideBranch db(.flags(flags), .condition(instruction[11:9]), .branchTaken(takeBranch));
-  
-  // Decide between PC+2, B address, and BR Address 
-  //                                            B                                       BR        
-  assign selectedPC = (instruction[15:12] == 4'b1100 & takeBranch) ? B_PC : (instruction[15:12] == 4'b1101 & takeBranch) ? branchRegData : plus2PC;
-  PC_Register pc(.clk(clk), .rst(~rst_n), .D(selectedPC), .WriteReg(1'b1), .ReadEnable1(1'b1), .Bitline1(readPC));
 
-  assign new_pc = (HLT == 1) ? curr_pc: readPC;
-  assign outPlus2PC = plus2PC;
-  
 endmodule
+
+// Original P1 PC_Control in its entirety for reference
+
+// module PC_Control(instruction, curr_pc, new_pc, clk, rst_n, branchRegData, HLT, outPlus2PC, flags);
+
+//   //  always #50 $monitor("Curr PC: %d, Plus2PC: %d, B_PC: %d", intermediatePC, plus2PC, B_PC);
+//   input [15:0] instruction, curr_pc, branchRegData;
+//   input clk, rst_n, HLT;
+//   input [2:0] flags;
+
+//   output [15:0] new_pc, outPlus2PC;
+
+//   wire [15:0] plus2PC, B_PC, BR_PC, selectedPC, readPC;
+//   wire pcError, takeBranch;
+  
+//   // add two to curr pc
+//   addsub_16bit pcAdder(.A(curr_pc), .B(16'd2), .sub(1'b0), .Sum(plus2PC), .Ovfl(pcError));
+
+//   // calc branch
+//   branchUnit br(.instruction(instruction), .curr_pc(curr_pc), .B_PC(B_PC));
+  
+//   // see if branch taken or not
+//   decideBranch db(.flags(flags), .condition(instruction[11:9]), .branchTaken(takeBranch));
+  
+//   // Decide between PC+2, B address, and BR Address 
+//   //                                            B                                       BR        
+//   assign selectedPC = (instruction[15:12] == 4'b1100 & takeBranch) ? B_PC : (instruction[15:12] == 4'b1101 & takeBranch) ? branchRegData : plus2PC;
+//   PC_Register pc(.clk(clk), .rst(~rst_n), .D(selectedPC), .WriteReg(1'b1), .ReadEnable1(1'b1), .Bitline1(readPC));
+
+//   assign new_pc = (HLT == 1) ? curr_pc: readPC;
+//   assign outPlus2PC = plus2PC;
+
+// endmodule
 
 // Malcolm's HW5 version
 
