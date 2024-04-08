@@ -1,11 +1,11 @@
 module ID_unit(clk, rst_n, flushIF, currInstruction, PCS_PC_ID, writeReg_WB, dstReg_WB, writeReg_ID, 
-    regDataToWrite, regData1, regData2, regDst1, regDst2, B_PC);
+    regDataToWrite, regSel, regData1, regData2, regDst1, regDst2, B_PC);
 
     // Ports
     input clk, rst_n, writeReg_WB;
     input [3:0] dstReg_WB;
     input [15:0] currInstruction, regDataToWrite, PCS_PC_ID;
-    output writeReg_ID, flushIF;
+    output writeReg_ID, flushIF, regSel;
     output [15:0] regData1, regData2, regDst1, regDst2, B_PC;
 
     // Internal
@@ -21,21 +21,25 @@ module ID_unit(clk, rst_n, flushIF, currInstruction, PCS_PC_ID, writeReg_WB, dst
     assign opCode = currInstruction[15:12];
 
     // Extract possible destination registers
-    assign regDst1 = currInstruction[20:16];
-    assign regDst2 = currInstruction[15:11];
+    // TODO: Is this the right order?
+    assign regDst1 = currInstruction[8:5];
+    assign regDst2 = currInstruction[11:8];
 
     // set control signals
     // TODO: add flushIF
-    controlUnit CU(.opCode(opCode), .rst_n(rst_n), .writeReg(writeReg_ID), .readReg1(readReg1), 
+    controlUnit control(.opCode(opCode), .rst_n(rst_n), .writeReg(writeReg_ID), .readReg1(readReg1), 
         .readReg2(readReg2), .memWrite(memWrite), .memRead(memRead), .ComputeType(ComputeType), 
         .MemType(MemType), .BinaryType(BinaryType), .BranchType(BranchType));
 
     // select regSources
-    selectRegSource srs(.inst(currInstruction), .ComputeType(ComputeType), .BinaryType(BinaryType), 
+    selectRegSource selRegSrc(.inst(currInstruction), .ComputeType(ComputeType), .BinaryType(BinaryType), 
         .MemType(MemType), .BranchType(BranchType), .srcReg1(srcReg1), .srcReg2(srcReg2));
 
+    selectRegDst selRegDst(.inst(currInstruction), .ComputeType(ComputeType), .BinaryType(BinaryType), 
+        .MemType(MemType), .RegDst(regSel));
+
     // register files
-    RegisterFile rf(.clk(clk), .rst(~rst_n), .SrcReg1(srcReg1), .SrcReg2(srcReg2), .DstReg(dstReg_WB), 
+    RegisterFile regFile(.clk(clk), .rst(~rst_n), .SrcReg1(srcReg1), .SrcReg2(srcReg2), .DstReg(dstReg_WB), 
         .WriteReg(writeReg_WB), .DstData(regDataToWrite), .SrcData1(regData1), .SrcData2(regData2));
 
     // calc branch
@@ -46,6 +50,7 @@ module ID_unit(clk, rst_n, flushIF, currInstruction, PCS_PC_ID, writeReg_WB, dst
     addsub_16bit branchAdder_2(.A(PCS_PC_ID), .B(imm), .sub(1'b0), .Sum(B_PC));
     
     // see if branch taken or not
-    decideBranch db(.flags(flags), .condition(instruction[11:9]), .branchTaken(takeBranch));
+    // TODO: Deal with flags, takeBranch
+    decideBranch db(.flags(flags), .condition(currInstruction[11:9]), .branchTaken(takeBranch));
 
 endmodule
