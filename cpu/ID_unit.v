@@ -3,7 +3,8 @@ module ID_unit(clk, rst_n, flushIF, currInstruction, PCS_PC_ID, writeReg_WB, dst
 
     // Ports
     input clk, rst_n, writeReg_WB;
-    input [15:0] currInstruction, regDataToWrite, dstReg_WB, PCS_PC_ID;
+    input [3:0] dstReg_WB;
+    input [15:0] currInstruction, regDataToWrite, PCS_PC_ID;
     output writeReg_ID, flushIF;
     output [15:0] regData1, regData2, regDst1, regDst2, B_PC;
 
@@ -18,6 +19,10 @@ module ID_unit(clk, rst_n, flushIF, currInstruction, PCS_PC_ID, writeReg_WB, dst
 
     // Extract opcode
     assign opCode = currInstruction[15:12];
+
+    // Extract possible destination registers
+    assign regDst1 = currInstruction[20:16];
+    assign regDst2 = currInstruction[15:11];
 
     // set control signals
     // TODO: add flushIF

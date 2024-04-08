@@ -17,45 +17,66 @@ module cpu(clk, rst_n, hlt, pc_out);
    wire [15:0] currInstruction_IF, PCS_PC_IF;
    // ID
    wire [15:0] currInstruction_ID, regData1_ID, regData2_ID, regDst1_ID, regDst2_ID;
+   wire regSel_ID, memToReg_ID;
    // EX
    wire [15:0] regData1_EX, regData2_EX, regDst1_EX, regDst2_EX;
+   wire regSel_EX, memToReg_EX;
+   // MEM
+   wire memToReg_MEM;
+   // WB
+   wire memToReg_WB;
 
    // IF
    IF_unit IF(.clk(clk), .rst_n(rst_n), .takeBranch(takeBranch), .currInstruction(currInstruction), 
       .lastInstruction(currInstruction_ID), .PCS_PC(PCS_PC_IF), .BR_PC(BR_PC), .B_PC(B_PC));
 
    // IF/ID buffer
-   IF_ID_buf IFIDbuf(.currInstruction_IF(currInstruction_IF), .currInstruction_ID(currInstruction_ID), 
-      .PCS_PC_IF(PCS_PC_IF), .PCS_PC_ID(PCS_PC_ID), .clk(clk), .rst_n(rst_n), .flushIF(flushIF));
+   IF_ID_buf IFIDbuf(.clk(clk), .rst_n(rst_n), .flushIF(flushIF),
+      .currInstruction_IF(currInstruction_IF), .PCS_PC_IF(PCS_PC_IF),
+      .currInstruction_ID(currInstruction_ID), .PCS_PC_ID(PCS_PC_ID));
 
    // ID
    // "Branches should be resolved at the ID stage"
-   // TODO: BR_PC
+   // TODO: BR_PC, memToReg_ID
    ID_unit ID(.clk(clk), .rst_n(rst_n), .flushIF(flushIF), .currInstruction(currInstruction), 
       .PCS_PC_ID(PCS_PC_ID), .writeReg_WB(writeReg_WB), .dstReg_WB(dstReg_WB), .writeReg_ID(writeReg_ID), 
       .regDataToWrite(regDataToWrite), .regData1(regData1_ID), .regData2(regData2_ID), 
       .regDst1(regDst1_ID), .regDst2(regDst2_ID), .B_PC(B_PC));
 
    // ID/EX buffer
-   ID_EX_buf IDEXbuf(.regData1_ID(regData1_ID), .regData1_EX(regData1_EX), .regData2_ID(regData2_ID), 
-      .regData2_EX(regData2_EX), .regDst1_ID(regDst1_ID), .regDst2_ID(regDst2_ID), 
-      .regDst1_EX(regDst1_EX), .regDst2_EX(regDst2_EX), .clk(clk), .rst_n(rst_n));
+   // TODO: add regSel internally, add writeReg_ID, writeReg_EX
+   ID_EX_buf IDEXbuf(.clk(clk), .rst_n(rst_n),
+      .regData1_ID(regData1_ID), .regData2_ID(regData2_ID), .regDst1_ID(regDst1_ID), .regDst2_ID(regDst2_ID), .regSel_ID(regSel_ID),
+      .memToReg_ID(memToReg_ID),
+      .regData1_EX(regData1_EX), .regData2_EX(regData2_EX), .regDst1_EX(regDst1_EX), .regDst2_EX(regDst2_EX), .regSel_EX(regSel_EX),
+      .memToReg_EX(memToReg_EX));
 
    // EX
-   EX_unit EX();
+   EX_unit EX(.clk(clk), .rst_n(rst_n), .regSel(regSel_EX), .regData1(regData1_EX), .regData2(regData2_EX), 
+      .regDst1(regDst1_EX), .regDst2(regDst2_EX), .regDst(regDst_EX));
 
    // EX/MEM buffer
-   EX_MEM_buf EXMEMbuf();
+   // TODO: Add 
+   EX_MEM_buf EXMEMbuf(.clk(clk), .rst_n(rst_n),
+      .MemDataIn_MEM(MemDataIn_MEM), .memAddress_MEM(memAddress_MEM), .regSel_MEM(regSel_MEM), .writeReg_MEM(writeReg_MEM),
+      .regDst_MEM(regDst_MEM), .memToReg_MEM(memToReg_MEM),
+      .MemDataIn_EX(MemDataIn_EX),   .memAddress_EX(memAddress_EX),   .regSel_EX(regSel_EX),   .writeReg_EX(writeReg_EX), 
+      .regDst_EX(regDst_EX),  .memToReg_EX(memToReg_EX));
 
    // MEM
-   MEM_unit MEM();
+   MEM_unit MEM(.clk(clk), .rst_n(rst_n), .MemDataIn(MemDataIn_MEM), .memAddress(memAddress_MEM), 
+      .memRead(memRead), .memWrite(memWrite), .MemData(MemData_MEM));
 
    // MEM/WB buffer
-   MEM_WB_buf MEMWBbuf();
+   MEM_WB_buf MEMWBbuf(.clk(clk), .rst_n(rst_n),
+      .MemData_MEM(MemData_MEM), .memAddress_MEM(memAddress_MEM), .regSel_MEM(regSel_MEM), .writeReg_MEM(writeReg_MEM), 
+      .regDst_MEM(regDst_MEM), .memToReg_MEM(memToReg_MEM)
+      .MemData_WB(MemData_WB),   .memAddress_WB(memAddress_WB),   .regSel_WB(regSel_WB),   .writeReg_WB(writeReg_WB),  
+      .regDst_WB(regDst_WB),   .memToReg_WB(memToReg_WB));
 
    // WB
-   // Note: ID stage will need writeReg_WB, dstReg_WB, and regDataToWrite signals from the WB stage
-   WB_unit WB();
+   // Note: ID stage will need dstReg_WB, and regDataToWrite signals from the WB stage
+   WB_unit WB(.memToReg(memToReg_WB) .MemData(MemData_WB), .memAddress(memAddress_WB));
 
    // Hazard detection unit
    hazardUnit hazdetect();
