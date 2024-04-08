@@ -21,7 +21,7 @@ module cpu(clk, rst_n, hlt, pc_out);
 
    // IF/ID buffer
    IF_ID_buf IFIDbuf(.currInstruction_IF(currInstruction_IF), .currInstruction_ID(currInstruction_ID), 
-      .PCS_PC_IF(PCS_PC_IF), .PCS_PC_ID(PCS_PC_ID));
+      .PCS_PC_IF(PCS_PC_IF), .PCS_PC_ID(PCS_PC_ID), .clk(clk), .rst_n(rst_n));
 
    // ID
    // "Branches should be resolved at the ID stage"
@@ -32,7 +32,8 @@ module cpu(clk, rst_n, hlt, pc_out);
    // ID/EX buffer
    // PCS_PC_ID not needed by ID, but does need to be buffered
    ID_EX_buf IDEXbuf(.PCS_PC_ID(PCS_PC_ID), .PCS_PC_EX(PCS_PC_EX), .regData1_ID(regData1_ID), 
-      .regData1_EX(regData1_EX), .regData2_ID(regData2_ID), .regData2_EX(regData2_EX));
+      .regData1_EX(regData1_EX), .regData2_ID(regData2_ID), .regData2_EX(regData2_EX), .clk(clk), 
+      .rst_n(rst_n));
 
    // EX
    EX_unit EX();

@@ -7,6 +7,7 @@ module IF_unit(clk, rst_n, takeBranch, currInstruction, lastInstruction, PCS_PC,
 
     // Internal
     wire [3:0] opCode;
+    wire [15:0] readPC;
     wire hlt_fetched, b_fetched, br_fetched;
 
     /*
