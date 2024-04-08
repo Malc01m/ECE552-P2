@@ -32,7 +32,7 @@ module cpu(clk, rst_n, hlt, pc_out);
    // "Branches should be resolved at the ID stage"
    // TODO: BR_PC
    ID_unit ID(.clk(clk), .rst_n(rst_n), .flushIF(flushIF), .currInstruction(currInstruction), 
-      .writeReg_WB(writeReg_WB), .dstReg_WB(dstReg_WB), .writeReg_ID(writeReg_ID), 
+      .PCS_PC_ID(PCS_PC_ID), .writeReg_WB(writeReg_WB), .dstReg_WB(dstReg_WB), .writeReg_ID(writeReg_ID), 
       .regDataToWrite(regDataToWrite), .regData1(regData1_ID), .regData2(regData2_ID), 
       .regDst1(regDst1_ID), .regDst2(regDst2_ID), .B_PC(B_PC));
 
