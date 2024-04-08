@@ -1,4 +1,4 @@
-module selectRegDst(inst,ComputeType, MemType, BinaryType, RegDst);
+module selectRegDst(inst, ComputeType, MemType, BinaryType, RegDst);
 
     // ports
     input wire [15:0] inst;
@@ -13,7 +13,7 @@ module selectRegDst(inst,ComputeType, MemType, BinaryType, RegDst);
     // XOR 0010
     // PADDSB 0111
     // RED 0011
-    reg[2:0] combinedVector;
+    reg [2:0] combinedVector;
 
     always @(inst, ComputeType, MemType, BinaryType) begin
         combinedVector = {ComputeType, MemType, BinaryType};
