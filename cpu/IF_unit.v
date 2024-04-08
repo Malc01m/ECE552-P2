@@ -1,14 +1,14 @@
-module IF_unit(clk, rst_n, takeBranch, currInstruction, lastInstruction, PCS_PC, BR_PC, B_PC);
+module IF_unit(clk, rst_n, PCSrc, currInstruction, PC_plusImm, PC_plus4);
 
     // Ports
-    input clk, rst_n, takeBranch;
-    input [15:0] BR_PC, B_PC, lastInstruction;
-    output [15:0] currInstruction, PCS_PC;
+    input clk, rst_n, PCSrc;
+    input [15:0] PC_plusImm;
+    output [15:0] currInstruction, PC_plus4;
 
     // Internal
     wire [3:0] opCode;
     wire [15:0] readPC;
-    wire hlt_fetched, b_fetched, br_fetched;
+    wire hlt_fetched;
 
     /*
     "The HLT instruction should raise the ‘hlt’ signal only when it reaches the writeback stage. 
@@ -20,32 +20,21 @@ module IF_unit(clk, rst_n, takeBranch, currInstruction, lastInstruction, PCS_PC,
     */
 
     assign opCode = currInstruction[15:12];
-    assign hlt_fetched =    (opCode == 4'b1111);
-    assign b_fetched =      (opCode == 4'b1100);
-    assign br_fetched =     (opCode == 4'b1101);
+    assign hlt_fetched = (opCode == 4'b1111);
 
-    // TODO: This is wrong. Need to know that the branch was actually taken,
-    // knowing that a branch inst. was encountered is not enough. Will fix.
-    assign last_opCode = lastInstruction[15:12];
-    assign b_taken =        (last_opCode == 4'b1100);
-    assign br_taken =       (last_opCode == 4'b1101);
-
-    // Decide between halt, B address, BR Address, and PC+2
-    assign selectedPC = ((hlt_fetched) & (b_taken))     ? B_PC :    // B taken, update anyway
-                        ((hlt_fetched) & (br_taken))    ? BR_PC :   // BR taken, update anyway
-                        (hlt_fetched)                   ? readPC :  // prevent the PC from being updated
-                        (b_fetched & takeBranch)        ? B_PC : 
-                        (br_fetched & takeBranch)       ? BR_PC : PCS_PC;
+    // Decide between halt at current PC, PC_plusImm, and PC_plus4
+    assign selectedPC = (hlt_fetched & ~PCSrc) ? readPC
+        : ((PCSrc) ? PC_plusImm : PC_plus4);
     
     // add four to curr pc
-    addsub_16bit pcAdder(.A(selectedPC), .B(16'd4), .sub(1'b0), .Sum(PCS_PC), .Ovfl(pcError));
+    addsub_16bit pcAdder(.A(readPC), .B(16'd4), .sub(1'b0), .Sum(PC_plus4), .Ovfl(pcError));
 
     // PC register
     PC_Register pc(.clk(clk), .rst(~rst_n), .D(selectedPC), .WriteReg(1'b1), .ReadEnable1(1'b1), 
         .Bitline1(readPC));
 
     // Instruction memory
-    memory1c Imem(.addr(selectedPC), .data_out(currInstruction), .clk(clk), .rst(~rst_n), .enable(1'b1), 
+    memory1c Imem(.addr(readPC), .data_out(currInstruction), .clk(clk), .rst(~rst_n), .enable(1'b1), 
         .wr(1'b0));
 
 endmodule
