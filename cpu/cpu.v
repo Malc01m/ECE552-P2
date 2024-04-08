@@ -11,9 +11,14 @@ module cpu(clk, rst_n, hlt, pc_out);
    output [15:0] pc_out;
 
    // internal
-   wire doBranch;
-   wire [15:0] currInstruction_IF, currInstruction_ID, PCS_PC_IF, PCS_PC_ID, PCS_PC_EX, 
-      regData1_ID, regData2_ID, regData1_EX, regData2_EX, branchAddr;
+   wire takeBranch;
+   wire [15:0] BR_PC;
+   // IF
+   wire [15:0] currInstruction_IF, PCS_PC_IF;
+   // ID
+   wire [15:0] currInstruction_ID, regData1_ID, regData2_ID, regDst1_ID, regDst2_ID;
+   // EX
+   wire [15:0] regData1_EX, regData2_EX, regDst1_EX, regDst2_EX;
 
    // IF
    IF_unit IF(.clk(clk), .rst_n(rst_n), .takeBranch(takeBranch), .currInstruction(currInstruction), 
@@ -21,19 +26,20 @@ module cpu(clk, rst_n, hlt, pc_out);
 
    // IF/ID buffer
    IF_ID_buf IFIDbuf(.currInstruction_IF(currInstruction_IF), .currInstruction_ID(currInstruction_ID), 
-      .PCS_PC_IF(PCS_PC_IF), .PCS_PC_ID(PCS_PC_ID), .clk(clk), .rst_n(rst_n));
+      .PCS_PC_IF(PCS_PC_IF), .PCS_PC_ID(PCS_PC_ID), .clk(clk), .rst_n(rst_n), .flushIF(flushIF));
 
    // ID
    // "Branches should be resolved at the ID stage"
-   ID_unit ID(.clk(clk), .rst_n(rst_n), .HLT(hlt), .currInstruction(currInstruction), 
-      .writeReg_WB(writeReg_WB), .dstReg_WB(dstReg_WB), .writeReg_ID(writeReg_ID), .dstReg_ID(dstReg_ID), 
-      .regDataToWrite(regDataToWrite), .regData1(regData1_ID), .regData2(regData2_ID));
+   // TODO: BR_PC
+   ID_unit ID(.clk(clk), .rst_n(rst_n), .flushIF(flushIF), .currInstruction(currInstruction), 
+      .writeReg_WB(writeReg_WB), .dstReg_WB(dstReg_WB), .writeReg_ID(writeReg_ID), 
+      .regDataToWrite(regDataToWrite), .regData1(regData1_ID), .regData2(regData2_ID), 
+      .regDst1(regDst1_ID), .regDst2(regDst2_ID), .B_PC(B_PC));
 
    // ID/EX buffer
-   // PCS_PC_ID not needed by ID, but does need to be buffered
-   ID_EX_buf IDEXbuf(.PCS_PC_ID(PCS_PC_ID), .PCS_PC_EX(PCS_PC_EX), .regData1_ID(regData1_ID), 
-      .regData1_EX(regData1_EX), .regData2_ID(regData2_ID), .regData2_EX(regData2_EX), .clk(clk), 
-      .rst_n(rst_n));
+   ID_EX_buf IDEXbuf(.regData1_ID(regData1_ID), .regData1_EX(regData1_EX), .regData2_ID(regData2_ID), 
+      .regData2_EX(regData2_EX), .regDst1_ID(regDst1_ID), .regDst2_ID(regDst2_ID), 
+      .regDst1_EX(regDst1_EX), .regDst2_EX(regDst2_EX), .clk(clk), .rst_n(rst_n));
 
    // EX
    EX_unit EX();

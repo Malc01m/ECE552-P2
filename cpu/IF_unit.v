@@ -24,6 +24,8 @@ module IF_unit(clk, rst_n, takeBranch, currInstruction, lastInstruction, PCS_PC,
     assign b_fetched =      (opCode == 4'b1100);
     assign br_fetched =     (opCode == 4'b1101);
 
+    // TODO: This is wrong. Need to know that the branch was actually taken,
+    // knowing that a branch inst. was encountered is not enough. Will fix.
     assign last_opCode = lastInstruction[15:12];
     assign b_taken =        (last_opCode == 4'b1100);
     assign br_taken =       (last_opCode == 4'b1101);
@@ -36,7 +38,7 @@ module IF_unit(clk, rst_n, takeBranch, currInstruction, lastInstruction, PCS_PC,
                         (br_fetched & takeBranch)       ? BR_PC : PCS_PC;
     
     // add four to curr pc
-    addsub_16bit pcAdder(.A(selectedPC), .B(16'd2), .sub(1'b0), .Sum(PCS_PC), .Ovfl(pcError));
+    addsub_16bit pcAdder(.A(selectedPC), .B(16'd4), .sub(1'b0), .Sum(PCS_PC), .Ovfl(pcError));
 
     // PC register
     PC_Register pc(.clk(clk), .rst(~rst_n), .D(selectedPC), .WriteReg(1'b1), .ReadEnable1(1'b1), 

@@ -1,11 +1,11 @@
-module ID_unit(clk, rst_n, HLT, currInstruction, writeReg_WB, dstReg_WB, writeReg_ID, dstReg_ID, 
-    regDataToWrite, regData1, regData2);
+module ID_unit(clk, rst_n, flushIF, currInstruction, writeReg_WB, dstReg_WB, writeReg_ID, 
+    regDataToWrite, regData1, regData2, regDst1, regDst2, B_PC);
 
     // Ports
     input clk, rst_n, writeReg_WB;
     input [15:0] currInstruction, regDataToWrite, dstReg_WB;
-    output writeReg_ID, HLT;
-    output [15:0] regData1, regData2, dstReg_ID;
+    output writeReg_ID, flushIF;
+    output [15:0] regData1, regData2, regDst1, regDst2, B_PC;
 
     // Internal
     wire [3:0] opCode;
@@ -18,20 +18,33 @@ module ID_unit(clk, rst_n, HLT, currInstruction, writeReg_WB, dstReg_WB, writeRe
     assign opCode = currInstruction[15:12];
 
     // set control signals
+    // TODO: add flushIF
     controlUnit CU(.opCode(opCode), .rst_n(rst_n), .writeReg(writeReg_ID), .readReg1(readReg1), 
         .readReg2(readReg2), .memWrite(memWrite), .memRead(memRead), .ComputeType(ComputeType), 
-        .MemType(MemType), .BinaryType(BinaryType), .BranchType(BranchType), .HLT(HLT));
+        .MemType(MemType), .BinaryType(BinaryType), .BranchType(BranchType));
 
     // select regSources
     selectRegSource srs(.inst(currInstruction), .ComputeType(ComputeType), .BinaryType(BinaryType), 
         .MemType(MemType), .BranchType(BranchType), .srcReg1(srcReg1), .srcReg2(srcReg2));
 
-    // select regDst
-    selectRegDst sld(.inst(currInstruction), .ComputeType(ComputeType), .RegDst(dstReg_ID), 
-        .MemType(MemType), .BinaryType(BinaryType));
-
     // register files
     RegisterFile rf(.clk(clk), .rst(~rst_n), .SrcReg1(srcReg1), .SrcReg2(srcReg2), .DstReg(dstReg_WB), 
         .WriteReg(writeReg_WB), .DstData(regDataToWrite), .SrcData1(regData1), .SrcData2(regData2));
+
+    // calc branch
+    input [15:0] curr_pc;
+    output [15:0] B_PC;
+    
+
+    wire [15:0] pc_plus_2, br_out, imm;
+    wire [9:0] temp;
+    assign temp = currInstruction[8:0] << 1; 
+    assign imm = {{7{temp[8]}}, temp};
+
+    addsub_16bit branchAdder_1(.A(curr_pc), .B(16'd2), .sub(1'b0), .Sum(pc_plus_2));
+    addsub_16bit branchAdder_2(.A(pc_plus_2), .B(imm), .sub(1'b0), .Sum(B_PC));
+    
+    // see if branch taken or not
+    decideBranch db(.flags(flags), .condition(instruction[11:9]), .branchTaken(takeBranch));
 
 endmodule
