@@ -10,19 +10,36 @@ module cpu(clk, rst_n, hlt, pc_out);
    output hlt;
    output [15:0] pc_out;
 
+   // internal
+   wire takeBranch;
+   wire [15:0] BR_PC;
    // IF
-   wire [0:15] currInstruction_IF;
+   wire [15:0] currInstruction_IF, PCS_PC_IF;
+   // ID
+   wire [15:0] currInstruction_ID, regData1_ID, regData2_ID, regDst1_ID, regDst2_ID;
+   // EX
+   wire [15:0] regData1_EX, regData2_EX, regDst1_EX, regDst2_EX;
 
-   IF_unit IF(.clk(clk), .rst_n(rst_n), .currInstruction(currInstruction_IF));
+   // IF
+   IF_unit IF(.clk(clk), .rst_n(rst_n), .takeBranch(takeBranch), .currInstruction(currInstruction), 
+      .lastInstruction(currInstruction_ID), .PCS_PC(PCS_PC_IF), .BR_PC(BR_PC), .B_PC(B_PC));
 
    // IF/ID buffer
-   IF_ID_buf IFIDbuf();
+   IF_ID_buf IFIDbuf(.currInstruction_IF(currInstruction_IF), .currInstruction_ID(currInstruction_ID), 
+      .PCS_PC_IF(PCS_PC_IF), .PCS_PC_ID(PCS_PC_ID), .clk(clk), .rst_n(rst_n), .flushIF(flushIF));
 
    // ID
-   ID_unit ID();
+   // "Branches should be resolved at the ID stage"
+   // TODO: BR_PC
+   ID_unit ID(.clk(clk), .rst_n(rst_n), .flushIF(flushIF), .currInstruction(currInstruction), 
+      .PCS_PC_ID(PCS_PC_ID), .writeReg_WB(writeReg_WB), .dstReg_WB(dstReg_WB), .writeReg_ID(writeReg_ID), 
+      .regDataToWrite(regDataToWrite), .regData1(regData1_ID), .regData2(regData2_ID), 
+      .regDst1(regDst1_ID), .regDst2(regDst2_ID), .B_PC(B_PC));
 
    // ID/EX buffer
-   ID_EX_buf IDEXbuf();
+   ID_EX_buf IDEXbuf(.regData1_ID(regData1_ID), .regData1_EX(regData1_EX), .regData2_ID(regData2_ID), 
+      .regData2_EX(regData2_EX), .regDst1_ID(regDst1_ID), .regDst2_ID(regDst2_ID), 
+      .regDst1_EX(regDst1_EX), .regDst2_EX(regDst2_EX), .clk(clk), .rst_n(rst_n));
 
    // EX
    EX_unit EX();
@@ -37,6 +54,7 @@ module cpu(clk, rst_n, hlt, pc_out);
    MEM_WB_buf MEMWBbuf();
 
    // WB
+   // Note: ID stage will need writeReg_WB, dstReg_WB, and regDataToWrite signals from the WB stage
    WB_unit WB();
 
    // Hazard detection unit

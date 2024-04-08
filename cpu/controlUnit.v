@@ -1,9 +1,12 @@
-module controlUnit(opCode, rst_n, writeReg, readReg1, readReg2, memRead, memWrite, ComputeType, MemType, BinaryType, BranchType, HLT);
+module controlUnit(opCode, rst_n, writeReg, readReg1, readReg2, memRead, memWrite, ComputeType, 
+   MemType, BinaryType, BranchType);
 
    // ports
+   // Note: HLT was removed from controlUnit, should be asserted in WB
    input wire [3:0] opCode;
    input rst_n;
-   output reg writeReg, readReg1, readReg2, memRead, memWrite, ComputeType, MemType, BinaryType, BranchType, HLT;
+   output reg writeReg, readReg1, readReg2, memRead, memWrite, ComputeType, MemType, BinaryType, 
+      BranchType;
 
    // internal
    reg error;
@@ -25,7 +28,6 @@ module controlUnit(opCode, rst_n, writeReg, readReg1, readReg2, memRead, memWrit
             BinaryType = 0;
             BranchType = 0;
 
-            HLT = 0;
             error = 0;
          end
 
@@ -42,7 +44,6 @@ module controlUnit(opCode, rst_n, writeReg, readReg1, readReg2, memRead, memWrit
             BinaryType = 0;
             BranchType = 0;
 
-            HLT = 0;
             error = 0;  
          end
 
@@ -59,7 +60,6 @@ module controlUnit(opCode, rst_n, writeReg, readReg1, readReg2, memRead, memWrit
             BinaryType = 0;
             BranchType = 0;
 
-            HLT = 0;
             error = 0;
          end
 
@@ -77,7 +77,6 @@ module controlUnit(opCode, rst_n, writeReg, readReg1, readReg2, memRead, memWrit
             BinaryType = 1;
             BranchType = 0;
 
-            HLT = 0;
             error = 0;
          end
 
@@ -95,7 +94,6 @@ module controlUnit(opCode, rst_n, writeReg, readReg1, readReg2, memRead, memWrit
             BinaryType = 0;
             BranchType = 1;
 
-            HLT = 0;
             error = 0;
          end
          
@@ -112,13 +110,11 @@ module controlUnit(opCode, rst_n, writeReg, readReg1, readReg2, memRead, memWrit
             BinaryType = 0;
             BranchType = 0;
 
-            HLT = 1;
             error = 0;
          end
 
          default: begin
-            error=1; // Default case 
-            HLT = 0;
+            error=1; // Default case
          end
          
       endcase

@@ -3,12 +3,11 @@ module selectRegSource(inst, ComputeType, MemType, BinaryType, BranchType, srcRe
     // ports
     input wire [15:0] inst;
     input ComputeType, MemType, BinaryType, BranchType;
-
     output reg [3:0] srcReg1, srcReg2;
 
     // internal
     reg error;
-    reg[3:0] combinedVector;
+    reg [3:0] combinedVector;
 
     // always #20 $monitor("Current Instruction: %b, CombinedVec: %b", inst, combinedVector);
 
