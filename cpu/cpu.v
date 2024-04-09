@@ -30,22 +30,23 @@ module cpu(clk, rst_n, hlt, pc_out);
 
    // IF
    // Status: Complete
-   IF_unit IF(.clk(clk), .rst_n(rst_n), .PCSrc(PCSrc), .PC_plus4(PC_plus4_IF), .currInstruction(currInstruction), 
+   IF_unit IF(.clk(clk), .rst_n(rst_n), .PCSrc(PCSrc), .PC_plus4(PC_plus4_IF), .currInstruction(currInstruction_IF), 
       .PC_plusImm(PC_plusImm));
 
    // IF/ID buffer
-   // TODO: PC_plus4_IF
+   // TODO: PC_plus4_IF, no-op on flush
    IF_ID_buf IFIDbuf(.clk(clk), .rst_n(rst_n), .flushIF(flushIF),
       .currInstruction_IF(currInstruction_IF), .PC_plus4_IF(PC_plus4_IF),
       .currInstruction_ID(currInstruction_ID), .PC_plus4_ID(PC_plus4_ID));
 
    // ID
+   // Status: Has issues with branches, working on it
    // "Branches should be resolved at the ID stage"
-   // TODO: BR_PC, memToReg_ID, memRead_ID, memWrite_ID, tookLastBranch, PC_plus4_ID, PC_plusImm
-   ID_unit ID(.clk(clk), .rst_n(rst_n), .flushIF(flushIF), .currInstruction(currInstruction), 
-      .PCS_PC_ID(PCS_PC_ID), .writeReg_WB(writeReg_WB), .dstReg_WB(dstReg_WB), .writeReg_ID(writeReg_ID), 
-      .regDataToWrite(regDataToWrite), .regData1(regData1_ID), .regData2(regData2_ID), .regSel(regSel_ID),
-      .regDst1(regDst1_ID), .regDst2(regDst2_ID), .B_PC(B_PC), .memRead(memRead_ID), .memWrite(memWrite_ID));
+   // TODO: memToReg_ID, memRead_ID, memWrite_ID, PCSrc
+   ID_unit ID(.clk(clk), .rst_n(rst_n), .currInstruction(currInstruction_ID), 
+      .PC_plus4(PC_plus4_ID), .writeReg_WB(writeReg_WB), .dstReg_WB(dstReg_WB), .writeReg_ID(writeReg_ID), 
+      .regDataToWrite(regDataToWrite), .regData1(regData1_ID), .regData2(regData2_ID), .regSel(regSel_ID), .PCSel(PCSrc),
+      .regDst1(regDst1_ID), .regDst2(regDst2_ID), .PC_plusImm(PC_plusImm), .memRead(memRead_ID), .memWrite(memWrite_ID));
 
    // ID/EX buffer
    // TODO: add regSel internally, add writeReg_ID, writeReg_EX
@@ -56,6 +57,7 @@ module cpu(clk, rst_n, hlt, pc_out);
       .memToReg_EX(memToReg_EX), .memRead(memRead_EX), .memWrite(memWrite_EX));
 
    // EX
+   // Status: Mostly unfinished
    EX_unit EX(.clk(clk), .rst_n(rst_n), .regSel(regSel_EX), .regData1(regData1_EX), .regData2(regData2_EX), 
       .regDst1(regDst1_EX), .regDst2(regDst2_EX), .regDst(regDst_EX));
 
