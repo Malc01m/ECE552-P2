@@ -27,6 +27,8 @@ module cpu(clk, rst_n, hlt, pc_out);
    // WB
    wire memToReg_WB;
    wire [15:0] MemData_WB, memAddress_WB, dstReg_WB;
+   // hazards
+   wire stall;
 
    // IF
    // Status: Complete
@@ -37,7 +39,7 @@ module cpu(clk, rst_n, hlt, pc_out);
    // TODO: PC_plus4_IF, no-op on flush
    IF_ID_buf IFIDbuf(.clk(clk), .rst_n(rst_n), .flushIF(flushIF),
       .currInstruction_IF(currInstruction_IF), .PC_plus4_IF(PC_plus4_IF),
-      .currInstruction_ID(currInstruction_ID), .PC_plus4_ID(PC_plus4_ID));
+      .currInstruction_ID(currInstruction_ID), .PC_plus4_ID(PC_plus4_ID), .stall(stall));
 
    // ID
    // Status: Has issues with branches, working on it
@@ -54,7 +56,7 @@ module cpu(clk, rst_n, hlt, pc_out);
       .regData1_ID(regData1_ID), .regData2_ID(regData2_ID), .regDst1_ID(regDst1_ID), .regDst2_ID(regDst2_ID), .regSel_ID(regSel_ID),
       .memToReg_ID(memToReg_ID), .memRead_ID(memRead_ID), .memWrite_ID(memWrite_ID),
       .regData1_EX(regData1_EX), .regData2_EX(regData2_EX), .regDst1_EX(regDst1_EX), .regDst2_EX(regDst2_EX), .regSel_EX(regSel_EX),
-      .memToReg_EX(memToReg_EX), .memRead(memRead_EX), .memWrite(memWrite_EX));
+      .memToReg_EX(memToReg_EX), .memRead(memRead_EX), .memWrite(memWrite_EX), .stall(stall));
 
    // EX
    // Status: Mostly unfinished
@@ -87,7 +89,17 @@ module cpu(clk, rst_n, hlt, pc_out);
    WB_unit WB(.memToReg(memToReg_WB), .MemData(MemData_WB), .memAddress(memAddress_WB), .dstReg(dstReg_WB));
 
    // Hazard detection unit
-   hazardUnit hazdetect();
+   hazardUnit hazdetect(
+    .writeRegSel_DX(regDst1_EX), // Destination register in Decode-Execute stage
+    .writeRegSel_XM(regDst_EX), // Destination register in Execute-Memory stage
+    .writeRegSel_MWB(dstReg_WB), // Destination register in Memory-WriteBack stage
+    .readRegSel1(currInstruction[11:8]),
+    .readRegSel2(currInstruction[8:5]),
+    .regWrite_DX(writeReg_ID),
+    .regWrite_XM(writeReg_EX),
+    .regWrite_MWB(memToReg_WB), // Register write flag in Memory-WriteBack stage
+    .stall(stall)
+);
 
    // Forwarding unit
    forwardingUnit fw();
