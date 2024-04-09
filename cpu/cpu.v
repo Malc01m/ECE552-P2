@@ -59,7 +59,7 @@ module cpu(clk, rst_n, hlt, pc_out);
       .memToReg_EX(memToReg_EX), .memRead(memRead_EX), .memWrite(memWrite_EX), .stall(stall));
 
    // EX
-   // Status: Mostly unfinished
+   // Status: Complete
    EX_unit EX(.clk(clk), .rst_n(rst_n), .regSel(regSel_EX), .regData1(regData1_EX), .regData2(regData2_EX), 
       .memAddr(ALU_Data_MEM), .WB_Data(dstReg_WB), .regDst1(regDst1_EX), .regDst2(regDst2_EX), 
       .regData1_Sel(), .regData2_Sel(), .ALU_Data(ALU_Data_EX), .regDst(regDst_EX));
