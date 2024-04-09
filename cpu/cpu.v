@@ -29,6 +29,8 @@ module cpu(clk, rst_n, hlt, pc_out);
    wire [15:0] MemData_WB, ALU_Data_WB, dstReg_WB;
    // hazards
    wire stall;
+   // forwarding
+   wire [15:0] regFwd1, regFwd2, MemMemFwd;
 
    // IF
    // Status: Complete
@@ -74,6 +76,7 @@ module cpu(clk, rst_n, hlt, pc_out);
 
    // MEM
    // Status: Complete
+   MemDataIn_MEM = MemMemFwd ? WB_Data: memToReg_MEM; // Forwarding purpose
    MEM_unit MEM(.clk(clk), .rst_n(rst_n), .MemDataIn(MemDataIn_MEM), .memAddress(ALU_Data_MEM), 
       .memRead(memRead_MEM), .memWrite(memWrite_MEM), .MemData(MemData_MEM));
 
@@ -103,7 +106,21 @@ module cpu(clk, rst_n, hlt, pc_out);
 );
 
    // Forwarding unit
-   forwardingUnit fw();
+   forwardingUnit fw(
+      .ExSrcReg1(regData1_EX),
+      .ExSrcReg2(regData2_EX),
+      .MemDstReg(regDst_MEM),
+      .MemRegWrite(writeReg_MEM),
+      .WBRegWrite(memToReg_WB), // Flag indicating register write in Write-Back stage
+      .WBDstReg(dstReg_WB), // Destination register in Write-Back stage
+      .WBComputeData(memdata_WB),
+      .MemComputeData(MemData_MEM),
+      .MemSrcReg1(ALU_Data_MEM),
+      .WBOpCode(memdata_WB[15:12]), // I'm assuming this is the WB OPcode. not too sure honestly
+      .FwdReg1(regFwd1),
+      .FwdReg2(regFwd2),
+      .MEM_MEM(MemMemFwd)
+   );
 
 endmodule
 
