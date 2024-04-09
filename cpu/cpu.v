@@ -19,14 +19,14 @@ module cpu(clk, rst_n, hlt, pc_out);
    wire [15:0] currInstruction_ID, regData1_ID, regData2_ID, regDst1_ID, regDst2_ID;
    wire regSel_ID, memToReg_ID, memRead_ID, memWrite_ID;
    // EX
-   wire [15:0] regData1_EX, regData2_EX, regDst1_EX, regDst2_EX;
+   wire [15:0] regData1_EX, regData2_EX, regDst1_EX, regDst2_EX, ALU_Data_EX;
    wire regSel_EX, memToReg_EX, memRead_EX, memWrite_EX;
    // MEM
    wire memToReg_MEM, memRead_MEM, memWrite_MEM;
-   wire [15:0] MemData_MEM, memAddress_MEM;
+   wire [15:0] MemData_MEM, ALU_Data_MEM;
    // WB
    wire memToReg_WB;
-   wire [15:0] MemData_WB, memAddress_WB, dstReg_WB;
+   wire [15:0] MemData_WB, ALU_Data_WB, dstReg_WB;
 
    // IF
    // Status: Complete
@@ -59,32 +59,33 @@ module cpu(clk, rst_n, hlt, pc_out);
    // EX
    // Status: Mostly unfinished
    EX_unit EX(.clk(clk), .rst_n(rst_n), .regSel(regSel_EX), .regData1(regData1_EX), .regData2(regData2_EX), 
-      .regDst1(regDst1_EX), .regDst2(regDst2_EX), .regDst(regDst_EX));
+      .memAddr(ALU_Data_MEM), .WB_Data(dstReg_WB), .regDst1(regDst1_EX), .regDst2(regDst2_EX), 
+      .regData1_Sel(), .regData2_Sel(), .ALU_Data(ALU_Data_EX), .regDst(regDst_EX));
 
    // EX/MEM buffer
    // Status: Not started
    EX_MEM_buf EXMEMbuf(.clk(clk), .rst_n(rst_n),
-      .MemDataIn_MEM(MemDataIn_MEM), .memAddress_MEM(memAddress_MEM), .regSel_MEM(regSel_MEM), .writeReg_MEM(writeReg_MEM),
+      .MemDataIn_MEM(MemDataIn_MEM), .ALU_Data_MEM(ALU_Data_MEM), .regSel_MEM(regSel_MEM), .writeReg_MEM(writeReg_MEM),
       .regDst_MEM(regDst_MEM), .memToReg_MEM(memToReg_MEM), .memRead_MEM(memRead_MEM), .memWrite_MEM(memWrite_MEM),
-      .MemDataIn_EX(MemDataIn_EX),   .memAddress_EX(memAddress_EX),   .regSel_EX(regSel_EX),   .writeReg_EX(writeReg_EX), 
+      .MemDataIn_EX(MemDataIn_EX),   .ALU_Data_EX(ALU_Data_EX),   .regSel_EX(regSel_EX),   .writeReg_EX(writeReg_EX), 
       .regDst_EX(regDst_EX),   .memToReg_EX(memToReg_EX),   .memRead_EX(memRead_EX), .memWrite_EX(memWrite_EX));
 
    // MEM
    // Status: Complete
-   MEM_unit MEM(.clk(clk), .rst_n(rst_n), .MemDataIn(MemDataIn_MEM), .memAddress(memAddress_MEM), 
+   MEM_unit MEM(.clk(clk), .rst_n(rst_n), .MemDataIn(MemDataIn_MEM), .memAddress(ALU_Data_MEM), 
       .memRead(memRead_MEM), .memWrite(memWrite_MEM), .MemData(MemData_MEM));
 
    // MEM/WB buffer
    // Status: Not started
    MEM_WB_buf MEMWBbuf(.clk(clk), .rst_n(rst_n),
-      .MemData_MEM(MemData_MEM), .memAddress_MEM(memAddress_MEM), .regSel_MEM(regSel_MEM), .writeReg_MEM(writeReg_MEM), 
+      .MemData_MEM(MemData_MEM), .ALU_Data_MEM(ALU_Data_MEM), .regSel_MEM(regSel_MEM), .writeReg_MEM(writeReg_MEM), 
       .regDst_MEM(regDst_MEM), .memToReg_MEM(memToReg_MEM),
-      .MemData_WB(MemData_WB),   .memAddress_WB(memAddress_WB),   .regSel_WB(regSel_WB),   .writeReg_WB(writeReg_WB),  
+      .MemData_WB(MemData_WB),   .ALU_Data_WB(ALU_Data_WB),   .regSel_WB(regSel_WB),   .writeReg_WB(writeReg_WB),  
       .regDst_WB(regDst_WB),   .memToReg_WB(memToReg_WB));
 
    // WB
    // Status: Complete
-   WB_unit WB(.memToReg(memToReg_WB), .MemData(MemData_WB), .memAddress(memAddress_WB), .dstReg(dstReg_WB));
+   WB_unit WB(.memToReg(memToReg_WB), .MemData(MemData_WB), .ALUData(ALU_Data_WB), .dstReg(dstReg_WB));
 
    // Hazard detection unit
    hazardUnit hazdetect();
