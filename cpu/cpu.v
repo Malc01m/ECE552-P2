@@ -111,10 +111,10 @@ module cpu(clk, rst_n, hlt, pc_out);
       .MemRegWrite(writeReg_MEM),
       .WBRegWrite(memToReg_WB), // Flag indicating register write in Write-Back stage
       .WBDstReg(dstReg_WB), // Destination register in Write-Back stage
-      .WBComputeData(memdata_WB),
+      .WBComputeData(Memdata_WB),
       .MemComputeData(MemData_MEM),
       .MemSrcReg1(ALU_Data_MEM),
-      .WBOpCode(memdata_WB[15:12]), // I'm assuming this is the WB OPcode. not too sure honestly
+      .WBOpCode(Memdata_WB[15:12]), // I'm assuming this is the WB OPcode. not too sure honestly
       .FwdReg1(regFwd1),
       .FwdReg2(regFwd2),
       .MEM_MEM(MemMemFwd)
