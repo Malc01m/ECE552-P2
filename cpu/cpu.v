@@ -74,7 +74,7 @@ module cpu(clk, rst_n, hlt, pc_out);
 
    // MEM
    // Status: Complete
-   assign MemDataIn_MEM = MemMemFwd ? WB_Data : memToReg_MEM; // Forwarding purpose
+   assign MemDataIn_MEM = MemMemFwd ? dstReg_WB : memToReg_MEM; // Forwarding purpose
    MEM_unit MEM(.clk(clk), .rst_n(rst_n), .MemDataIn(MemDataIn_MEM), .memAddress(ALU_Data_MEM), 
       .memRead(memRead_MEM), .memWrite(memWrite_MEM), .MemData(MemData_MEM));
 
@@ -95,8 +95,8 @@ module cpu(clk, rst_n, hlt, pc_out);
     .writeRegSel_DX(regDst1_EX), // Destination register in Decode-Execute stage
     .writeRegSel_XM(regDst_EX), // Destination register in Execute-Memory stage
     .writeRegSel_MWB(dstReg_WB), // Destination register in Memory-WriteBack stage
-    .readRegSel1(currInstruction[11:8]),
-    .readRegSel2(currInstruction[8:5]),
+    .readRegSel1(currInstruction_ID[11:8]),
+    .readRegSel2(currInstruction_ID[8:5]),
     .regWrite_DX(writeReg_ID),
     .regWrite_XM(writeReg_EX),
     .regWrite_MWB(memToReg_WB), // Register write flag in Memory-WriteBack stage
