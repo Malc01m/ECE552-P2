@@ -67,7 +67,7 @@ module memory1c (data_out, data_in, addr, enable, wr, clk, rst);
 
 endmodule 
 
-module dataMemory (data_out, data_in, addr, enable, wr, clk, rst);
+module dataMemory (data_out, data_in, addr, enable, wr, clk, rst, loaded);
 
    parameter ADDR_WIDTH = 16;
    output  [15:0] data_out;
@@ -80,7 +80,7 @@ module dataMemory (data_out, data_in, addr, enable, wr, clk, rst);
    wire [15:0]    data_out;
    
    reg [15:0]      mem [0:2**ADDR_WIDTH-1];
-   reg            loaded;
+   output reg            loaded;
    
    assign         data_out = (enable & (~wr))? {mem[addr[ADDR_WIDTH-1 :1]]}: 0; //Read
    initial begin

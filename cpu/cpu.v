@@ -76,7 +76,7 @@ module cpu(clk, rst_n, hlt, pc_out);
    // Status: Complete
    assign MemDataIn_MEM = MemMemFwd ? dstReg_WB : memToReg_MEM; // Forwarding purpose
    MEM_unit MEM(.clk(clk), .rst_n(rst_n), .MemDataIn(MemDataIn_MEM), .memAddress(ALU_Data_MEM), 
-      .memRead(memRead_MEM), .memWrite(memWrite_MEM), .MemData(MemData_MEM));
+      .memRead(memRead_MEM), .memWrite(memWrite_MEM), .MemData(MemData_MEM), .notdonem(notdonem));
 
    // MEM/WB buffer
    // Status: Not started
