@@ -38,7 +38,7 @@ module cpu(clk, rst_n, hlt, pc_out);
       .PC_plusImm(PC_plusImm));
 
    // IF/ID buffer
-   // TODO: PC_plus4_IF, no-op on flush
+   // TODO: no-op on flush
    IF_ID_buf IFIDbuf(.clk(clk), .rst_n(rst_n), .flushIF(flushIF),
       .currInstruction_IF(currInstruction_IF), .PC_plus4_IF(PC_plus4_IF),
       .currInstruction_ID(currInstruction_ID), .PC_plus4_ID(PC_plus4_ID), .stall(stall));
@@ -53,12 +53,11 @@ module cpu(clk, rst_n, hlt, pc_out);
       .regDst1(regDst1_ID), .regDst2(regDst2_ID), .PC_plusImm(PC_plusImm), .memRead(memRead_ID), .memWrite(memWrite_ID));
 
    // ID/EX buffer
-   // TODO: add regSel internally, add writeReg_ID, writeReg_EX
    ID_EX_buf IDEXbuf(.clk(clk), .rst_n(rst_n),
       .regData1_ID(regData1_ID), .regData2_ID(regData2_ID), .regDst1_ID(regDst1_ID), .regDst2_ID(regDst2_ID), .regSel_ID(regSel_ID),
-      .memToReg_ID(memToReg_ID), .memRead_ID(memRead_ID), .memWrite_ID(memWrite_ID),
+      .memToReg_ID(memToReg_ID), .memRead_ID(memRead_ID), .memWrite_ID(memWrite_ID), .writeReg_ID(writeReg_ID),
       .regData1_EX(regData1_EX), .regData2_EX(regData2_EX), .regDst1_EX(regDst1_EX), .regDst2_EX(regDst2_EX), .regSel_EX(regSel_EX),
-      .memToReg_EX(memToReg_EX), .memRead(memRead_EX), .memWrite(memWrite_EX), .stall(stall));
+      .memToReg_EX(memToReg_EX), .memRead(memRead_EX),    .memWrite(memWrite_EX),    .writeReg_EX(writeReg_EX), .stall(stall));
 
    // EX
    // Status: Complete
@@ -67,7 +66,6 @@ module cpu(clk, rst_n, hlt, pc_out);
       .regData1_Sel(), .regData2_Sel(), .ALU_Data(ALU_Data_EX), .regDst(regDst_EX));
 
    // EX/MEM buffer
-   // Status: Not started
    EX_MEM_buf EXMEMbuf(.clk(clk), .rst_n(rst_n),
       .MemDataIn_MEM(MemDataIn_MEM), .ALU_Data_MEM(ALU_Data_MEM), .regSel_MEM(regSel_MEM), .writeReg_MEM(writeReg_MEM),
       .regDst_MEM(regDst_MEM), .memToReg_MEM(memToReg_MEM), .memRead_MEM(memRead_MEM), .memWrite_MEM(memWrite_MEM),
@@ -76,7 +74,7 @@ module cpu(clk, rst_n, hlt, pc_out);
 
    // MEM
    // Status: Complete
-   MemDataIn_MEM = MemMemFwd ? WB_Data: memToReg_MEM; // Forwarding purpose
+   assign MemDataIn_MEM = MemMemFwd ? WB_Data : memToReg_MEM; // Forwarding purpose
    MEM_unit MEM(.clk(clk), .rst_n(rst_n), .MemDataIn(MemDataIn_MEM), .memAddress(ALU_Data_MEM), 
       .memRead(memRead_MEM), .memWrite(memWrite_MEM), .MemData(MemData_MEM));
 
